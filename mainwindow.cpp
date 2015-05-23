@@ -27,11 +27,11 @@ MainWindow::MainWindow(QWidget *parent) :
         ui->actionResident_4->setActionGroup(residentsMenuGroup);
 
         // Connect the residents to the same slot.
-        foreach (QAction *qa, ui->menuResident->actions())
-            this->connect(qa, SIGNAL(triggered()),
+        foreach (QAction *resident, ui->menuResident->actions())
+            this->connect(resident, SIGNAL(triggered()),
                           this, SLOT(on_actionResident_triggered()));
 
-        // Initialization
+        // Retrieve the mayor's information initially.
         QString name = saveData->readString(OFFSET_PLAYER_NAME, 8);
         uint abd = saveData->readInt32(OFFSET_PLAYER_ABD);
         uint wallet = saveData->readInt32(OFFSET_PLAYER_WALLET);
@@ -102,26 +102,28 @@ void MainWindow::on_actionAbout_triggered()
 void MainWindow::on_residentSetABD_clicked()
 {
     SaveData *saveData = SaveData::getInstance();
-    uint current = saveData->readInt32(OFFSET_PLAYER_ABD);
+    uint current = saveData->readInt32(this->getPlayerABDOffset());
     uint value = QInputDialog::getInt(this, tr("Set ABD"), tr("Enter a value for your ABD: "), current, 0, 999999999);
 
-    saveData->writeInt32(OFFSET_PLAYER_ABD, value);
+    saveData->writeInt32(this->getPlayerABDOffset(), value);
     ui->residentABDLabel->setText(QString::number(value) + " " + tr("Bells"));
 }
 
 void MainWindow::on_residentSetWallet_clicked()
 {
     SaveData *saveData = SaveData::getInstance();
-    uint current = saveData->readInt32(OFFSET_PLAYER_WALLET);
+    uint current = saveData->readInt32(this->getPlayerWalletOffset());
     uint value = QInputDialog::getInt(this, tr("Set Wallet"), tr("Enter a value for your wallet: "), current, 0, 999999);
 
-    saveData->writeInt32(OFFSET_PLAYER_WALLET, value);
+    saveData->writeInt32(this->getPlayerWalletOffset(), value);
     ui->residentWalletLabel->setText(QString::number(value) + " " + tr("Bells"));
 }
 
 void MainWindow::on_actionResident_triggered()
 {
     SaveData *saveData = SaveData::getInstance();
+
+    // Initialization
     QString name = saveData->readString(this->getPlayerNameOffset(), 8);
     uint abd = saveData->readInt32(this->getPlayerABDOffset());
     uint wallet = saveData->readInt32(this->getPlayerWalletOffset());

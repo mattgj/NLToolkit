@@ -112,7 +112,7 @@
      <height>21</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuFIle">
+   <widget class="QMenu" name="menuFile">
     <property name="title">
      <string>FIle</string>
     </property>
@@ -142,7 +142,7 @@
     <addaction name="actionTown_editor"/>
     <addaction name="actionTown_editor_2"/>
    </widget>
-   <addaction name="menuFIle"/>
+   <addaction name="menuFile"/>
    <addaction name="menuResident"/>
    <addaction name="menuTown"/>
    <addaction name="menuHelp"/>

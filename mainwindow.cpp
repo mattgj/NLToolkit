@@ -26,9 +26,15 @@ MainWindow::MainWindow(QWidget *parent) :
         ui->actionResident_3->setActionGroup(residentsMenuGroup);
         ui->actionResident_4->setActionGroup(residentsMenuGroup);
 
-        QString name = saveData->readString(OFFSET_PLAYER1_NAME, 8);
-        uint abd = saveData->readInt32(OFFSET_PLAYER1_ABD);
-        uint wallet = saveData->readInt32(OFFSET_PLAYER1_WALLET);
+        // Connect the residents to the same slot.
+        foreach (QAction *qa, ui->menuResident->actions())
+            this->connect(qa, SIGNAL(triggered()),
+                          this, SLOT(on_actionResident_triggered()));
+
+        // Initialization
+        QString name = saveData->readString(OFFSET_PLAYER_NAME, 8);
+        uint abd = saveData->readInt32(OFFSET_PLAYER_ABD);
+        uint wallet = saveData->readInt32(OFFSET_PLAYER_WALLET);
 
         ui->residentBox->setTitle(name);
         ui->residentABDLabel->setText(QString::number(abd) + " " + tr("Bells"));
@@ -45,6 +51,28 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+quint8 MainWindow::getPlayerID() const
+{
+    for (quint8 i = 0; i < ui->menuResident->actions().length(); ++i)
+        if (ui->menuResident->actions().at(i)->isChecked())
+            return i;
+    return 0;
+}
+
+quint32 MainWindow::getPlayerNameOffset() const
+{
+    return OFFSET_PLAYER_NAME + (this->getPlayerID() * OFFSET_PLAYER_OFFSET);
+}
+
+quint32 MainWindow::getPlayerWalletOffset() const
+{
+    return OFFSET_PLAYER_WALLET + (this->getPlayerID() * OFFSET_PLAYER_OFFSET);
+}
+
+quint32 MainWindow::getPlayerABDOffset() const
+{
+    return OFFSET_PLAYER_ABD + (this->getPlayerID() * OFFSET_PLAYER_OFFSET);
+}
 
 void MainWindow::on_actionSave_triggered()
 {
@@ -74,20 +102,32 @@ void MainWindow::on_actionAbout_triggered()
 void MainWindow::on_residentSetABD_clicked()
 {
     SaveData *saveData = SaveData::getInstance();
-    uint current = saveData->readInt32(OFFSET_PLAYER1_ABD);
+    uint current = saveData->readInt32(OFFSET_PLAYER_ABD);
     uint value = QInputDialog::getInt(this, tr("Set ABD"), tr("Enter a value for your ABD: "), current, 0, 999999999);
 
-    saveData->writeInt32(OFFSET_PLAYER1_ABD, value);
+    saveData->writeInt32(OFFSET_PLAYER_ABD, value);
     ui->residentABDLabel->setText(QString::number(value) + " " + tr("Bells"));
 }
 
 void MainWindow::on_residentSetWallet_clicked()
 {
     SaveData *saveData = SaveData::getInstance();
-    uint current = saveData->readInt32(OFFSET_PLAYER1_WALLET);
+    uint current = saveData->readInt32(OFFSET_PLAYER_WALLET);
     uint value = QInputDialog::getInt(this, tr("Set Wallet"), tr("Enter a value for your wallet: "), current, 0, 999999);
 
-    saveData->writeInt32(OFFSET_PLAYER1_WALLET, value);
+    saveData->writeInt32(OFFSET_PLAYER_WALLET, value);
     ui->residentWalletLabel->setText(QString::number(value) + " " + tr("Bells"));
 }
 
+void MainWindow::on_actionResident_triggered()
+{
+    SaveData *saveData = SaveData::getInstance();
+    QString name = saveData->readString(this->getPlayerNameOffset(), 8);
+    uint abd = saveData->readInt32(this->getPlayerABDOffset());
+    uint wallet = saveData->readInt32(this->getPlayerWalletOffset());
+
+    // Display the proper information.
+    ui->residentBox->setTitle(name);
+    ui->residentABDLabel->setText(QString::number(abd) + " " + tr("Bells"));
+    ui->residentWalletLabel->setText(QString::number(wallet) + " " + tr("Bells"));
+}
